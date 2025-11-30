@@ -1,0 +1,14 @@
+# System
+.DS_Store
+
+# Editor/tooling
+.vscode/
+.wrangler/
+
+# Build outputs
+coverage/
+dist/
+types/
+
+# Dependencies
+node_modules/
