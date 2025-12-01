@@ -16,29 +16,23 @@
 
 import { BadRequest, GET, JsonResponse, RouteWorker, StatusCodes } from "@adonix.org/cloud-spark";
 import { GithubAccessTokenResponse, GitHubPublicUser } from "../types/github-oauth";
-import { GITHUB_OAUTH_AUTHORIZE_URL } from "./constants";
+import {
+    GITHUB_API_USER_URL,
+    GITHUB_OAUTH_ACCESS_TOKEN_URL,
+    GITHUB_OAUTH_AUTHORIZE_URL,
+} from "./github/constants";
 
 class GitHubOAuth extends RouteWorker {
     protected override init(): void {
-        this.route(GET, "/github/login", this.login);
-        this.route(GET, "/github/callback", this.callback);
-    }
-
-    protected async login(): Promise<Response> {
-        const url = new URL(GITHUB_OAUTH_AUTHORIZE_URL);
-        url.searchParams.set("client_id", this.env.GITHUB_CLIENT_ID);
-        url.searchParams.set("redirect_uri", this.env.GITHUB_REDIRECT_URI);
-        url.searchParams.set("scope", "read:user user:email");
-        return Response.redirect(url.toString(), StatusCodes.MOVED_TEMPORARILY);
+        // this.route(GET, "/github/login", this.login);
+        // this.route(GET, "/github/callback", this.callback);
     }
 
     protected async callback(): Promise<Response> {
-        const url = new URL(this.request.url);
-        const code = url.searchParams.get("code");
+        const code = new URL(this.request.url).searchParams.get("code");
         if (!code) return this.response(BadRequest, "Missing code.");
 
-        // Step 2: Exchange code for access token
-        const tokenResp = await fetch("https://github.com/login/oauth/access_token", {
+        const tokenResp = await fetch(GITHUB_OAUTH_ACCESS_TOKEN_URL, {
             method: "POST",
             headers: { Accept: "application/json", "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -54,12 +48,11 @@ class GitHubOAuth extends RouteWorker {
 
         if (!tokenData.access_token) return this.response(BadRequest, "Token exchange failed");
 
-        // Step 3: Fetch user info
-        const userResp = await fetch("https://api.github.com/user", {
+        const userResp = await fetch(GITHUB_API_USER_URL, {
             headers: {
                 Authorization: `Bearer ${tokenData.access_token}`,
-                "User-Agent": "Cloudflare-Worker", // REQUIRED by GitHub API
-                Accept: "application/vnd.github.v3+json", // optional, but recommended
+                "User-Agent": "Cloudflare-Worker",
+                Accept: "application/vnd.github.v3+json",
             },
         });
 
