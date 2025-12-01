@@ -22,5 +22,8 @@
     "observability": {
         "enabled": true
     },
-    "placement": { "mode": "smart" }
+    "placement": { "mode": "smart" },
+    "vars": {
+        "GITHUB_REDIRECT_URI": "https://auth.adonix.org/github/callback"
+    }
 }

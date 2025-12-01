@@ -5,10 +5,13 @@
 .vscode/
 .wrangler/
 
+# Environment
+.dev.vars
+
 # Build outputs
 coverage/
 dist/
-types/
+types/cloudflare.d.ts
 
 # Dependencies
 node_modules/

@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "types": "wrangler types --config wrangler.jsonc ./types/cloudflare.d.ts",
-        "prebuild": "npm run lint && mkdir -p ./types && npm run types",
+        "prebuild": "npm run lint && npm run types",
         "build": "wrangler build",
         "deploy": "tsc && wrangler deploy",
         "dev": "wrangler dev",
@@ -13,7 +13,6 @@
         "lint": "eslint ./src"
     },
     "devDependencies": {
-        "@cloudflare/vitest-pool-workers": "^0.8.19",
         "@eslint/js": "^9.39.1",
         "@typescript-eslint/eslint-plugin": "^8.48.0",
         "@typescript-eslint/parser": "^8.48.0",
@@ -25,6 +24,7 @@
         "wrangler": "^4.51.0"
     },
     "dependencies": {
-        "@adonix.org/cloud-spark": "^1.0.0"
+        "@adonix.org/cloud-spark": "^1.0.0",
+        "argon2-browser": "^1.18.0"
     }
 }
