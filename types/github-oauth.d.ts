@@ -97,3 +97,9 @@ export interface GithubAccessTokenRequest {
     redirect_uri?: string;
     state?: string;
 }
+
+export interface GitHubOAuthError {
+    error: string;
+    error_description?: string;
+    error_uri?: string;
+}

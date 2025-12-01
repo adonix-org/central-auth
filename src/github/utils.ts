@@ -14,15 +14,50 @@
  * limitations under the License.
  */
 
-import { GET, POST } from "@adonix.org/cloud-spark";
-import { GithubAccessTokenRequest } from "../../types/github-oauth";
+import { GET, POST, StatusCodes } from "@adonix.org/cloud-spark";
+import {
+    GithubAccessTokenRequest,
+    GithubAccessTokenResponse,
+    GitHubPublicUser,
+} from "../../types/github-oauth";
 import {
     CENTRAL_AUTH_USER_AGENT,
     GITHUB_API_USER_URL,
     GITHUB_OAUTH_ACCESS_TOKEN_URL,
 } from "./constants";
+import { getError, getErrorMessage, GitHubError } from "./error";
 
-export function getTokenRequest(env: Env, code: string): Request {
+export async function getToken(env: Env, code: string): Promise<GithubAccessTokenResponse> {
+    const response = await fetch(getTokenRequest(env, code));
+    if (!response.ok) throw getError(response, "Error fetching token.");
+
+    const json = await response.json<GithubAccessTokenResponse>();
+    if (!json.access_token) {
+        throw new GitHubError(
+            StatusCodes.BAD_REQUEST,
+            getErrorMessage(json, "Token exchange returned no access token.")
+        );
+    }
+
+    return json;
+}
+
+export async function getUser(token: GithubAccessTokenResponse): Promise<GitHubPublicUser> {
+    const response = await fetch(getUserRequest(token.access_token));
+    if (!response.ok) throw getError(response, "Error fetching user.");
+
+    const json = await response.json<GitHubPublicUser>();
+    if (!json.id) {
+        throw new GitHubError(
+            StatusCodes.BAD_REQUEST,
+            getErrorMessage(json, "User data missing ID.")
+        );
+    }
+
+    return json;
+}
+
+function getTokenRequest(env: Env, code: string): Request {
     const headers = new Headers({
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -44,7 +79,7 @@ export function getTokenRequest(env: Env, code: string): Request {
     return new Request(GITHUB_OAUTH_ACCESS_TOKEN_URL, init);
 }
 
-export function getUserRequest(token: string): Request {
+function getUserRequest(token: string): Request {
     const headers = new Headers({
         Authorization: `Bearer ${token}`,
         "User-Agent": CENTRAL_AUTH_USER_AGENT,

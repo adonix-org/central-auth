@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+import { GET, RouteTable } from "@adonix.org/cloud-spark";
+
+import { GitHubCallback } from "./callback";
+import { GitHubLogin } from "./login";
+
 export const GITHUB_OAUTH_AUTHORIZE_URL = "https://github.com/login/oauth/authorize";
 
 export const GITHUB_OAUTH_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
@@ -21,3 +26,8 @@ export const GITHUB_OAUTH_ACCESS_TOKEN_URL = "https://github.com/login/oauth/acc
 export const GITHUB_API_USER_URL = "https://api.github.com/user";
 
 export const CENTRAL_AUTH_USER_AGENT = "adonix-org/central-auth (https://adonix.org)";
+
+export const GITHUB_OAUTH_ROUTES: RouteTable = [
+    [GET, "/login", GitHubLogin],
+    [GET, "/github/callback", GitHubCallback],
+];

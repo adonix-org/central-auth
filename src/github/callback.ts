@@ -15,25 +15,19 @@
  */
 
 import { BadRequest, BasicWorker, JsonResponse } from "@adonix.org/cloud-spark";
-import { GithubAccessTokenResponse, GitHubPublicUser } from "../../types/github-oauth";
-import { getTokenRequest, getUserRequest } from "./utils";
+import { getToken, getUser } from "./utils";
+import { getErrorResponse } from "./error";
 
 export class GitHubCallback extends BasicWorker {
     protected override async get(): Promise<Response> {
         const code = new URL(this.request.url).searchParams.get("code");
         if (!code) return this.response(BadRequest, "Missing code.");
 
-        const tokenResp = await fetch(getTokenRequest(this.env, code));
-        if (!tokenResp.ok) return tokenResp;
-
-        const tokenData = await tokenResp.json<GithubAccessTokenResponse>();
-        if (!tokenData.access_token)
-            return this.response(BadRequest, "Token exchange returned no access token.");
-
-        const userResp = await fetch(getUserRequest(tokenData.access_token));
-        if (!userResp.ok) return userResp;
-
-        const userData = await userResp.json<GitHubPublicUser>();
-        return this.response(JsonResponse, userData);
+        try {
+            const user = await getUser(await getToken(this.env, code));
+            return this.response(JsonResponse, user);
+        } catch (error) {
+            return await getErrorResponse(error);
+        }
     }
 }

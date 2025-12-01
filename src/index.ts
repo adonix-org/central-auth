@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-import { GET, RouteTable, RouteWorker } from "@adonix.org/cloud-spark";
-import { GitHubLogin } from "./login";
-import { GitHubCallback } from "./callback";
+import { RouteWorker } from "@adonix.org/cloud-spark";
+import { GITHUB_OAUTH_ROUTES } from "./github/constants";
 
-const GITHUB_OAUTH_ROUTES: RouteTable = [
-    [GET, "/github/login", GitHubLogin],
-    [GET, "/github/callback", GitHubCallback],
-];
-
-export class GitHubOAuthWorker extends RouteWorker {
+class CentralAuth extends RouteWorker {
     protected override init(): void {
         this.routes(GITHUB_OAUTH_ROUTES);
     }
 }
 
-export default GitHubOAuthWorker.ignite();
+export default CentralAuth.ignite();
