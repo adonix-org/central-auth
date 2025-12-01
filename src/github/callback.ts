@@ -14,54 +14,26 @@
  * limitations under the License.
  */
 
-import { BadRequest, BasicWorker, GET, POST, TextResponse } from "@adonix.org/cloud-spark";
-import {
-    CENTRAL_AUTH_USER_AGENT,
-    GITHUB_API_USER_URL,
-    GITHUB_OAUTH_ACCESS_TOKEN_URL,
-} from "./constants";
-import { GithubAccessTokenRequest } from "../../types/github-oauth";
+import { BadRequest, BasicWorker, JsonResponse } from "@adonix.org/cloud-spark";
+import { GithubAccessTokenResponse, GitHubPublicUser } from "../../types/github-oauth";
+import { getTokenRequest, getUserRequest } from "./utils";
 
-export abstract class GitHubCallback extends BasicWorker {
+export class GitHubCallback extends BasicWorker {
     protected override async get(): Promise<Response> {
         const code = new URL(this.request.url).searchParams.get("code");
         if (!code) return this.response(BadRequest, "Missing code.");
 
-        return this.response(TextResponse, "Hello world");
-    }
+        const response = await fetch(getTokenRequest(this.env, code));
+        if (!response.ok) return response;
 
-    private getUserRequest(token: string): Request {
-        const headers = new Headers({
-            Authorization: `Bearer ${token}`,
-            "User-Agent": CENTRAL_AUTH_USER_AGENT,
-            Accept: "application/vnd.github.v3+json",
-        });
+        const token = await response.json<GithubAccessTokenResponse>();
+        if (!token.access_token)
+            return this.response(BadRequest, "Token exchange returned no access token.");
 
-        return new Request(GITHUB_API_USER_URL, {
-            method: GET,
-            headers,
-        });
-    }
+        const userResp = await fetch(getUserRequest(token.access_token));
+        if (!userResp.ok) return userResp;
 
-    private getTokenRequest(code: string): Request {
-        const headers = new Headers({
-            Accept: "application/json",
-            "Content-Type": "application/json",
-        });
-
-        const body: GithubAccessTokenRequest = {
-            client_id: this.env.GITHUB_CLIENT_ID,
-            client_secret: this.env.GITHUB_CLIENT_SECRET,
-            code,
-            redirect_uri: this.env.GITHUB_REDIRECT_URI,
-        };
-
-        const init: RequestInit = {
-            method: POST,
-            headers,
-            body: JSON.stringify(body),
-        };
-
-        return new Request(GITHUB_OAUTH_ACCESS_TOKEN_URL, init);
+        const user = await userResp.json<GitHubPublicUser>();
+        return this.response(JsonResponse, { user, token: token.access_token });
     }
 }

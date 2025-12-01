@@ -17,7 +17,7 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "central-auth",
-    "main": "src/index.ts",
+    "main": "src/github/index.ts",
     "compatibility_date": "2025-11-28",
     "observability": {
         "enabled": true

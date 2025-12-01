@@ -17,7 +17,7 @@
 import { BasicWorker, StatusCodes } from "@adonix.org/cloud-spark";
 import { GITHUB_OAUTH_AUTHORIZE_URL } from "./constants";
 
-export abstract class GitHubLogin extends BasicWorker {
+export class GitHubLogin extends BasicWorker {
     protected override async get(): Promise<Response> {
         const url = new URL(GITHUB_OAUTH_AUTHORIZE_URL);
         url.searchParams.set("client_id", this.env.GITHUB_CLIENT_ID);
