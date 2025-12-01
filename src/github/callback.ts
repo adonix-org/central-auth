@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { BadRequest, BasicWorker, JsonResponse } from "@adonix.org/cloud-spark";
+import { BadRequest, BasicWorker, TextResponse } from "@adonix.org/cloud-spark";
 import { getToken, getUser } from "./utils";
 import { getErrorResponse } from "./error";
 
@@ -25,7 +25,7 @@ export class GitHubCallback extends BasicWorker {
 
         try {
             const user = await getUser(await getToken(this.env, code));
-            return this.response(JsonResponse, user);
+            return this.response(TextResponse, JSON.stringify(user, null, 4));
         } catch (error) {
             return await getErrorResponse(error);
         }
