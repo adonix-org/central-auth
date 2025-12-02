@@ -17,7 +17,7 @@
 import { StatusCodes, WorkerResponse } from "@adonix.org/cloud-spark";
 import { AuthState } from "./state";
 
-export class TokenResponse extends WorkerResponse {
+export class JwtResponse extends WorkerResponse {
     constructor(state: AuthState, token: string) {
         super();
         this.status = StatusCodes.MOVED_TEMPORARILY;

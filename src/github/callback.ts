@@ -18,7 +18,7 @@ import { BadRequest, BasicWorker } from "@adonix.org/cloud-spark";
 import { getToken, getUser } from "./utils";
 import { getErrorResponse } from "./error";
 import { decodeState } from "./state";
-import { TokenResponse } from "./response";
+import { JwtResponse } from "./response";
 
 export class GitHubCallback extends BasicWorker {
     protected override async get(): Promise<Response> {
@@ -29,7 +29,8 @@ export class GitHubCallback extends BasicWorker {
 
         try {
             const user = await getUser(await getToken(this.env, code));
-            return this.response(TokenResponse, decodeState(url), "0123456789");
+            const state = decodeState(url);
+            return await this.response(JwtResponse, state, "0123456789");
         } catch (error) {
             return await getErrorResponse(error);
         }
