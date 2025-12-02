@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-import { BadRequest, BasicWorker, TextResponse } from "@adonix.org/cloud-spark";
+import { BadRequest, BasicWorker } from "@adonix.org/cloud-spark";
 import { getToken, getUser } from "./utils";
 import { getErrorResponse } from "./error";
+import { decodeState } from "./state";
+import { TokenResponse } from "./response";
 
 export class GitHubCallback extends BasicWorker {
     protected override async get(): Promise<Response> {
-        const code = new URL(this.request.url).searchParams.get("code");
+        const url = new URL(this.request.url);
+        const code = url.searchParams.get("code");
+
         if (!code) return this.response(BadRequest, "Missing code.");
 
         try {
             const user = await getUser(await getToken(this.env, code));
-            return this.response(TextResponse, JSON.stringify(user, null, 4));
+            return this.response(TokenResponse, decodeState(url), "0123456789");
         } catch (error) {
             return await getErrorResponse(error);
         }

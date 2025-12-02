@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-import { BasicWorker, StatusCodes } from "@adonix.org/cloud-spark";
+import { BadRequest, BasicWorker, StatusCodes } from "@adonix.org/cloud-spark";
 import { GITHUB_OAUTH_AUTHORIZE_URL } from "./constants";
+import { AuthState, encodeState } from "./state";
 
 export class GitHubLogin extends BasicWorker {
     protected override async get(): Promise<Response> {
-        const url = new URL(GITHUB_OAUTH_AUTHORIZE_URL);
-        url.searchParams.set("client_id", this.env.GITHUB_CLIENT_ID);
-        url.searchParams.set("redirect_uri", this.env.GITHUB_REDIRECT_URI);
-        url.searchParams.set("scope", "read:user user:email");
+        const target = new URL(this.request.url).searchParams.get("target");
+        if (!target) return this.response(BadRequest, "Missing redirect target URL.");
 
-        return Response.redirect(url.toString(), StatusCodes.MOVED_TEMPORARILY);
+        const state: AuthState = {
+            redirect: target,
+        };
+
+        const redirect = new URL(GITHUB_OAUTH_AUTHORIZE_URL);
+        redirect.searchParams.set("client_id", this.env.GITHUB_CLIENT_ID);
+        redirect.searchParams.set("redirect_uri", this.env.GITHUB_REDIRECT_URI);
+        redirect.searchParams.set("scope", "read:user user:email");
+        redirect.searchParams.set("state", encodeState(state));
+        return Response.redirect(redirect.toString(), StatusCodes.MOVED_TEMPORARILY);
     }
 }
