@@ -16,7 +16,7 @@
 
 import { BadRequest, BasicWorker, StatusCodes } from "@adonix.org/cloud-spark";
 import { GITHUB_OAUTH_AUTHORIZE_URL } from "./constants";
-import { AuthState, encodeState } from "./state";
+import { AuthState, encodeState, getExpireSeconds } from "./state";
 
 export class GitHubLogin extends BasicWorker {
     protected override async get(): Promise<Response> {
@@ -27,19 +27,18 @@ export class GitHubLogin extends BasicWorker {
         const app = url.searchParams.get("app");
         if (!app) return this.response(BadRequest, "Missing 'app' param..");
 
-        const expire = url.searchParams.get("expire");
-
         const state: AuthState = {
-            redirect: target,
-            expire,
             app,
+            redirect: target,
+            issued: Math.floor(Date.now() / 1000),
+            expire: getExpireSeconds(url.searchParams.get("expire")),
         };
 
         const redirect = new URL(GITHUB_OAUTH_AUTHORIZE_URL);
         redirect.searchParams.set("client_id", this.env.GITHUB_CLIENT_ID);
         redirect.searchParams.set("redirect_uri", this.env.GITHUB_REDIRECT_URI);
         redirect.searchParams.set("scope", "read:user user:email");
-        redirect.searchParams.set("state", encodeState(state));
+        redirect.searchParams.set("state", await encodeState(state, this.env.GITHUB_STATE_SECRET));
         return Response.redirect(redirect.toString(), StatusCodes.MOVED_TEMPORARILY);
     }
 }
