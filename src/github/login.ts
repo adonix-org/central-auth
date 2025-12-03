@@ -20,11 +20,19 @@ import { AuthState, encodeState } from "./state";
 
 export class GitHubLogin extends BasicWorker {
     protected override async get(): Promise<Response> {
-        const target = new URL(this.request.url).searchParams.get("target");
-        if (!target) return this.response(BadRequest, "Missing redirect target URL.");
+        const url = new URL(this.request.url);
+        const target = url.searchParams.get("target");
+        if (!target) return this.response(BadRequest, "Missing 'target' param.");
+
+        const app = url.searchParams.get("app");
+        if (!app) return this.response(BadRequest, "Missing 'app' param..");
+
+        const expire = url.searchParams.get("expire");
 
         const state: AuthState = {
             redirect: target,
+            expire,
+            app,
         };
 
         const redirect = new URL(GITHUB_OAUTH_AUTHORIZE_URL);

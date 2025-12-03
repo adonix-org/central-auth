@@ -20,6 +20,11 @@ import { PublicJWK } from "./public";
 
 export const PUBLIC_JWKS_ROUTES: RouteTable = [[GET, "/.well-known/jwks.json", PublicJWK]];
 
+/**
+ * Default seconds until JWT expires.
+ */
+export const DEFAULT_JWT_EXPIRE = 3600;
+
 export const JWK_ALG = "ES256";
 
 /**

@@ -15,19 +15,15 @@
  */
 
 export interface CentralJWT {
-    iss: string;
     aud: string | string[];
     sub: string;
-    iat: number;
-    exp: number;
 
-    email: string;
-    name: string;
-    picture: string;
+    email: string | null;
+    name: string | null;
+    picture: string | null;
 
     provider: string;
-    roles?: string[];
-    [key: string]: number | string | string[] | undefined;
+    [key: string]: number | string | string[] | undefined | null;
 }
 
 export interface JWK {

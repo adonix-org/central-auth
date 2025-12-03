@@ -16,6 +16,8 @@
 
 export interface AuthState {
     redirect: string;
+    app: string;
+    expire: string | null;
 }
 
 /**

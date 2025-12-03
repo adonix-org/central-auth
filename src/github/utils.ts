@@ -26,6 +26,8 @@ import {
     GITHUB_OAUTH_ACCESS_TOKEN_URL,
 } from "./constants";
 import { getError, getErrorMessage, GitHubError } from "./error";
+import { CentralJWT } from "../jwt/interfaces";
+import { AuthState } from "./state";
 
 export async function getToken(env: Env, code: string): Promise<GithubAccessTokenResponse> {
     const response = await fetch(getTokenRequest(env, code));
@@ -40,6 +42,17 @@ export async function getToken(env: Env, code: string): Promise<GithubAccessToke
     }
 
     return json;
+}
+
+export function getPayload(state: AuthState, user: GitHubPublicUser): CentralJWT {
+    return {
+        aud: state.app,
+        sub: `github:${user.id}`,
+        email: user.email,
+        name: user.name,
+        picture: user.avatar_url,
+        provider: "github",
+    };
 }
 
 export async function getUser(token: GithubAccessTokenResponse): Promise<GitHubPublicUser> {

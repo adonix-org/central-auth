@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { importJWK, SignJWT } from "jose";
+import { importJWK, JWTPayload, SignJWT } from "jose";
+import { DEFAULT_JWT_EXPIRE, JWK_ALG } from "./constants";
 import { CentralJWT } from "./interfaces";
-import { JWK_ALG } from "./constants";
 
 export async function signJwt(
     env: Env,
     payload: CentralJWT,
-    expiresInSeconds = 3600
+    expiresInSeconds: string | number | null
 ): Promise<string> {
     const privateJwk = JSON.parse(env.PRIVATE_JWT_KEY);
     const privateKey = await importJWK(privateJwk, JWK_ALG);
@@ -31,8 +31,20 @@ export async function signJwt(
     return await new SignJWT(payload)
         .setProtectedHeader({ alg: JWK_ALG, kid: privateJwk.kid })
         .setIssuedAt(now)
-        .setExpirationTime(now + expiresInSeconds)
-        .setIssuer("https://auth.tybusby.com")
+        .setExpirationTime(now + getExpireSeconds(expiresInSeconds))
+        .setIssuer("https://auth.adonix.org")
         .setAudience(payload.aud)
         .sign(privateKey);
+}
+
+export function getExpireSeconds(seconds: string | number | null): number {
+    if (!seconds) return DEFAULT_JWT_EXPIRE;
+
+    let n: number;
+    if (typeof seconds === "number") {
+        n = seconds;
+    } else {
+        n = Number(seconds);
+    }
+    return Number.isFinite(n) && n > 0 ? n : DEFAULT_JWT_EXPIRE;
 }
