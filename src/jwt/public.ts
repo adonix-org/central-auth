@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { BasicWorker, JsonResponse } from "@adonix.org/cloud-spark";
+import { BasicWorker, JsonResponse, Time } from "@adonix.org/cloud-spark";
 import { PUBLIC_JWT_KEYS } from "./constants";
 
 export class PublicJWK extends BasicWorker {
     protected override get(): Promise<Response> {
-        return this.response(JsonResponse, PUBLIC_JWT_KEYS);
+        return this.response(JsonResponse, PUBLIC_JWT_KEYS, { "max-age": Time.Hour });
     }
 }
