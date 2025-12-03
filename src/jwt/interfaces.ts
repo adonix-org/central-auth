@@ -14,15 +14,31 @@
  * limitations under the License.
  */
 
-import { RouteWorker } from "@adonix.org/cloud-spark";
-import { GITHUB_OAUTH_ROUTES } from "./github/constants";
-import { PUBLIC_JWKS_ROUTES } from "./jwt/constants";
+export interface JWTPayload {
+    iss: string;
+    aud: string | string[];
+    sub: string;
+    iat: number;
+    exp: number;
 
-class CentralAuth extends RouteWorker {
-    protected override init(): void {
-        this.routes(GITHUB_OAUTH_ROUTES);
-        this.routes(PUBLIC_JWKS_ROUTES);
-    }
+    email: string;
+    name: string;
+    picture: string;
+
+    provider: string;
+    roles?: string[];
+    [key: string]: number | string | string[] | undefined;
 }
 
-export default CentralAuth.ignite();
+export interface JWK {
+    kty: string;
+    crv: string;
+    x: string;
+    y: string;
+    kid: string;
+    use?: string;
+}
+
+export interface JWKS {
+    keys: JWK[];
+}

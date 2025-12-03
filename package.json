@@ -14,6 +14,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.39.1",
+        "@types/node": "^24.10.1",
         "@typescript-eslint/eslint-plugin": "^8.48.0",
         "@typescript-eslint/parser": "^8.48.0",
         "eslint": "^9.39.1",
@@ -25,6 +26,7 @@
     },
     "dependencies": {
         "@adonix.org/cloud-spark": "^1.0.1",
-        "argon2-browser": "^1.18.0"
+        "argon2-browser": "^1.18.0",
+        "jose": "^6.1.3"
     }
 }
