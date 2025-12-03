@@ -15,10 +15,10 @@
  */
 
 import { BasicWorker, JsonResponse } from "@adonix.org/cloud-spark";
-import { PUBLIC_JWL_KEYS } from "./constants";
+import { PUBLIC_JWT_KEYS } from "./constants";
 
 export class PublicJWK extends BasicWorker {
     protected override get(): Promise<Response> {
-        return this.response(JsonResponse, PUBLIC_JWL_KEYS);
+        return this.response(JsonResponse, PUBLIC_JWT_KEYS);
     }
 }

@@ -20,12 +20,12 @@ import { PublicJWK } from "./public";
 
 export const PUBLIC_JWKS_ROUTES: RouteTable = [[GET, "/.well-known/jwks.json", PublicJWK]];
 
-export const JWT_ALG = "ES256";
+export const JWK_ALG = "ES256";
 
 /**
  * Always append new public keys to the array.
  */
-export const PUBLIC_JWL_KEYS: JWKS = {
+export const PUBLIC_JWT_KEYS: JWKS = {
     keys: [
         {
             kty: "EC",

@@ -16,7 +16,7 @@
 
 import { importJWK, SignJWT } from "jose";
 import { CentralJWT } from "./interfaces";
-import { JWT_ALG } from "./constants";
+import { JWK_ALG } from "./constants";
 
 export async function signJwt(
     env: Env,
@@ -24,12 +24,12 @@ export async function signJwt(
     expiresInSeconds = 3600
 ): Promise<string> {
     const privateJwk = JSON.parse(env.PRIVATE_JWT_KEY);
-    const privateKey = await importJWK(privateJwk, JWT_ALG);
+    const privateKey = await importJWK(privateJwk, JWK_ALG);
 
     const now = Math.floor(Date.now() / 1000);
 
     return await new SignJWT(payload)
-        .setProtectedHeader({ alg: JWT_ALG, kid: privateJwk.kid })
+        .setProtectedHeader({ alg: JWK_ALG, kid: privateJwk.kid })
         .setIssuedAt(now)
         .setExpirationTime(now + expiresInSeconds)
         .setIssuer("https://auth.tybusby.com")
