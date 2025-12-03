@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export interface JWTPayload {
+export interface CentralJWT {
     iss: string;
     aud: string | string[];
     sub: string;
