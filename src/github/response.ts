@@ -17,14 +17,29 @@
 import { StatusCodes, WorkerResponse } from "@adonix.org/cloud-spark";
 import { AuthState } from "./state";
 
-export class JwtResponse extends WorkerResponse {
-    constructor(state: AuthState, token: string) {
+export class Redirect extends WorkerResponse {
+    constructor(location: string) {
         super();
         this.status = StatusCodes.MOVED_TEMPORARILY;
         this.statusText = "Found";
 
+        this.setHeader("Location", location);
+    }
+}
+
+export class JwtResponse extends Redirect {
+    constructor(state: AuthState, token: string) {
         const url = new URL(state.successPath, state.origin);
-        url.searchParams.set("_adonix_auth", token);
-        this.setHeader("Location", url.toString());
+        url.searchParams.set("adonix_auth", token);
+        super(url.toString());
+    }
+}
+
+export class ErrorRedirect extends Redirect {
+    constructor(state: AuthState, error: unknown) {
+        const url = new URL(state.errorPath, state.origin);
+        url.searchParams.set("adonix_auth_error", String(error));
+        url.searchParams.set("target", state.origin + state.successPath);
+        super(url.toString());
     }
 }

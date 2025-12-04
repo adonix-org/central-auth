@@ -18,7 +18,7 @@ import { BadRequest, BasicWorker, Forbidden } from "@adonix.org/cloud-spark";
 import { getPayload, getToken, getUser } from "./utils";
 import { getErrorResponse } from "./error";
 import { decodeState, isTimedOut } from "./state";
-import { JwtResponse } from "./response";
+import { ErrorRedirect, JwtResponse } from "./response";
 import { signJwt } from "../jwt/utils";
 
 export class GitHubCallback extends BasicWorker {
@@ -42,9 +42,10 @@ export class GitHubCallback extends BasicWorker {
             const user = await getUser(await getToken(this.env, code));
             const payload = { ...getPayload(state, user) };
             const jwt = await signJwt(this.env, payload, state.expire);
+            //throw new Error("Testing error redirection. 🤞🏻");
             return await this.response(JwtResponse, state, jwt);
         } catch (error) {
-            return await getErrorResponse(error);
+            return this.response(ErrorRedirect, state, error);
         }
     }
 }
