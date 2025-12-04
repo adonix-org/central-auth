@@ -21,10 +21,37 @@ import { DEFAULT_JWT_EXPIRE } from "../jwt/constants";
 const STATE_TIMEOUT_SECONDS = 15 * Time.Minute;
 
 export interface AuthState {
-    redirect: string;
+    origin: string;
+    successPath: string;
+    errorPath: string;
     app: string;
     expire: number;
     issued: number;
+}
+
+export function createState(request: Request): AuthState {
+    const url = new URL(request.url);
+
+    const target = url.searchParams.get("target");
+    if (!target) throw new Error("Missing required 'target' parameter.");
+
+    const app = url.searchParams.get("app");
+    if (!app) throw new Error("Missing required `app` parameter.");
+
+    const errorPath = url.searchParams.get("errorPath") ?? "/error";
+    if (!isSafePath(errorPath)) throw new Error("Invalid 'error' path.");
+
+    const targetUrl = new URL(target);
+    if (!isSafePath(targetUrl.pathname)) throw new Error("Invalid 'target' path.");
+
+    return {
+        app,
+        origin: targetUrl.origin,
+        successPath: targetUrl.pathname + targetUrl.search,
+        errorPath,
+        issued: Math.floor(Date.now() / 1000),
+        expire: getExpireSeconds(url.searchParams.get("expire")),
+    };
 }
 
 export function isTimedOut(state: AuthState): boolean {
@@ -79,4 +106,13 @@ async function hmacSign(message: string, secret: string): Promise<string> {
 async function hmacVerify(message: string, signature: string, secret: string): Promise<boolean> {
     const expected = await hmacSign(message, secret);
     return expected === signature;
+}
+
+function isSafePath(path: string): boolean {
+    if (!path) return false;
+    if (!path.startsWith("/")) return false;
+    if (path.includes("..") || path.includes("//") || path.includes(".")) return false;
+
+    const pattern = /^\/([a-zA-Z]+(\/[a-zA-Z]+)*)?$/;
+    return pattern.test(path);
 }

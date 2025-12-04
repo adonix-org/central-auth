@@ -23,8 +23,8 @@ export class JwtResponse extends WorkerResponse {
         this.status = StatusCodes.MOVED_TEMPORARILY;
         this.statusText = "Found";
 
-        const url = new URL(state.redirect);
-        url.searchParams.set("token", token);
+        const url = new URL(state.successPath, state.origin);
+        url.searchParams.set("_adonix_auth", token);
         this.setHeader("Location", url.toString());
     }
 }

@@ -24,6 +24,7 @@
     },
     "placement": { "mode": "smart" },
     "vars": {
-        "GITHUB_REDIRECT_URI": "https://auth.adonix.org/github/callback"
+        "GITHUB_REDIRECT_URI": "https://auth.adonix.org/github/callback",
+        "ALLOWED_ORIGINS": ["https://www.tybusby.com", "https://nws.adonix.org"]
     }
 }
