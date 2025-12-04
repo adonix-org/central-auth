@@ -21,6 +21,7 @@ export class JwtResponse extends WorkerResponse {
     constructor(state: AuthState, token: string) {
         super();
         this.status = StatusCodes.MOVED_TEMPORARILY;
+        this.statusText = "Found";
 
         const url = new URL(state.redirect);
         url.searchParams.set("token", token);
