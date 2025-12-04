@@ -15,3 +15,6 @@ types/cloudflare.d.ts
 
 # Dependencies
 node_modules/
+
+# Debug
+src/debug.ts

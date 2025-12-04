@@ -24,22 +24,22 @@ import { signJwt } from "../jwt/utils";
 export class GitHubCallback extends BasicWorker {
     protected override async get(): Promise<Response> {
         const url = new URL(this.request.url);
-        const code = url.searchParams.get("code");
 
-        if (!code) return this.response(BadRequest, "Missing code.");
+        const encoded = url.searchParams.get("state");
+        if (!encoded) return this.response(Forbidden);
+
+        const state = await decodeState(encoded, this.env.GITHUB_STATE_SECRET);
+        if (!state) return this.response(Forbidden);
+        if (isTimedOut(state)) return this.response(Forbidden, "Login took too long.");
+
+        const allowed = JSON.parse(this.env.ALLOWED_ORGINS) as string[];
+        if (!allowed.includes(state.origin)) return this.response(Forbidden);
+
+        const code = url.searchParams.get("code");
+        if (!code) return this.response(Forbidden);
 
         try {
             const user = await getUser(await getToken(this.env, code));
-            const encoded = url.searchParams.get("state");
-            if (!encoded) return this.response(BadRequest, "Missing state.");
-            console.log(encoded);
-
-            const state = await decodeState(encoded, this.env.GITHUB_STATE_SECRET);
-            if (!state) return this.response(Forbidden, "Invalid login response.");
-            console.log(state);
-
-            if (isTimedOut(state)) return this.response(Forbidden, "Login took too long.");
-
             const payload = { ...getPayload(state, user) };
             const jwt = await signJwt(this.env, payload, state.expire);
             return await this.response(JwtResponse, state, jwt);
