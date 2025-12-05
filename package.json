@@ -1,5 +1,5 @@
 {
-    "name": "hello-world",
+    "name": "central-auth",
     "version": "0.0.0",
     "private": true,
     "type": "module",
@@ -20,7 +20,7 @@
         "eslint": "^9.39.1",
         "eslint-plugin-import": "^2.32.0",
         "jiti": "^2.6.1",
-        "typescript": "^5.5.2",
+        "typescript": "^5.9.3",
         "typescript-eslint": "^8.48.0",
         "wrangler": "^4.51.0"
     },
