@@ -15,7 +15,8 @@
  */
 
 import { StatusCodes, WorkerResponse } from "@adonix.org/cloud-spark";
-import { AuthState } from "./state";
+import { CENTRAL_AUTH_QUERY, CentralAuthState } from "@adonix.org/central-auth-types";
+import { base64url } from "jose";
 
 export class Redirect extends WorkerResponse {
     constructor(location: string) {
@@ -28,18 +29,27 @@ export class Redirect extends WorkerResponse {
 }
 
 export class JwtResponse extends Redirect {
-    constructor(state: AuthState, token: string) {
-        const url = new URL(state.successPath, state.origin);
+    constructor(state: CentralAuthState, token: string) {
+        const url = new URL(state.targetPath, state.origin);
         url.searchParams.set("adonix_auth", token);
         super(url.toString());
     }
 }
 
+export class LoginFailed extends Redirect {
+    constructor(state: CentralAuthState) {
+        const url = new URL(state.loginPath, state.origin);
+        url.searchParams.set("adonix_auth_error", "Invalid login.");
+        url.searchParams.set(CENTRAL_AUTH_QUERY, base64url.encode(JSON.stringify(state)));
+        super(url.toString());
+    }
+}
+
 export class ErrorRedirect extends Redirect {
-    constructor(state: AuthState, error: unknown) {
+    constructor(state: CentralAuthState, error: unknown) {
         const url = new URL(state.errorPath, state.origin);
         url.searchParams.set("adonix_auth_error", String(error));
-        url.searchParams.set("target", state.origin + state.successPath);
+        url.searchParams.set(CENTRAL_AUTH_QUERY, base64url.encode(JSON.stringify(state)));
         super(url.toString());
     }
 }

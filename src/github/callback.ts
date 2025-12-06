@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { BadRequest, BasicWorker, Forbidden } from "@adonix.org/cloud-spark";
+import { BasicWorker, Forbidden } from "@adonix.org/cloud-spark";
 import { getPayload, getToken, getUser } from "./utils";
-import { getErrorResponse } from "./error";
-import { decodeState, isTimedOut } from "./state";
-import { ErrorRedirect, JwtResponse } from "./response";
+import { decodeState } from "./state";
+import { ErrorRedirect, JwtResponse, LoginFailed } from "./response";
 import { signJwt } from "../jwt/utils";
+
+const validUser = false;
 
 export class GitHubCallback extends BasicWorker {
     protected override async get(): Promise<Response> {
@@ -30,7 +31,6 @@ export class GitHubCallback extends BasicWorker {
 
         const state = await decodeState(encoded, this.env.GITHUB_STATE_SECRET);
         if (!state) return this.response(Forbidden);
-        if (isTimedOut(state)) return this.response(Forbidden, "Login took too long.");
 
         const allowed = JSON.parse(this.env.ALLOWED_ORGINS) as string[];
         if (!allowed.includes(state.origin)) return this.response(Forbidden);
@@ -40,10 +40,13 @@ export class GitHubCallback extends BasicWorker {
 
         try {
             const user = await getUser(await getToken(this.env, code));
+            if (!validUser) {
+                return this.response(LoginFailed, state);
+            }
+
             const payload = { ...getPayload(state, user) };
             const jwt = await signJwt(this.env, payload, state.expire);
-            //throw new Error("Testing error redirection. 🤞🏻");
-            return await this.response(JwtResponse, state, jwt);
+            return this.response(JwtResponse, state, jwt);
         } catch (error) {
             return this.response(ErrorRedirect, state, error);
         }

@@ -51,7 +51,11 @@
         "strict": true,
 
         /* Skip type checking all .d.ts files. */
-        "skipLibCheck": true
+        "skipLibCheck": true,
+
+        "paths": {
+            "@adonix.org/central-auth-types": ["./types-pkg/src"]
+        }
     },
     "include": ["types", "src/**/*.ts"]
 }

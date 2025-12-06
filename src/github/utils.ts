@@ -27,7 +27,7 @@ import {
 } from "./constants";
 import { getError, getErrorMessage, GitHubError } from "./error";
 import { CentralJWT } from "../jwt/interfaces";
-import { AuthState } from "./state";
+import { CentralAuthState } from "@adonix.org/central-auth-types";
 
 export async function getToken(env: Env, code: string): Promise<GithubAccessTokenResponse> {
     const response = await fetch(getTokenRequest(env, code));
@@ -44,7 +44,7 @@ export async function getToken(env: Env, code: string): Promise<GithubAccessToke
     return json;
 }
 
-export function getPayload(state: AuthState, user: GitHubPublicUser): CentralJWT {
+export function getPayload(state: CentralAuthState, user: GitHubPublicUser): CentralJWT {
     return {
         aud: state.app,
         sub: `github:${user.id}`,

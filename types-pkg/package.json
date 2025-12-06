@@ -1,0 +1,9 @@
+{
+    "name": "@adonix-org/central-auth-types",
+    "version": "1.0.0",
+    "type": "module",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/"
+    ]
+}

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { CentralAuthState } from "@adonix.org/central-auth-types";
 import { BadRequest, BasicWorker, Forbidden, StatusCodes } from "@adonix.org/cloud-spark";
 import { GITHUB_OAUTH_AUTHORIZE_URL } from "./constants";
 import { createState, encodeState } from "./state";

@@ -14,71 +14,47 @@
  * limitations under the License.
  */
 
+import {
+    assertCentralAuthQuery,
+    CENTRAL_AUTH_QUERY,
+    CentralAuthState,
+} from "@adonix.org/central-auth-types";
 import { Time } from "@adonix.org/cloud-spark";
 import { base64url } from "jose";
-import { DEFAULT_JWT_EXPIRE } from "../jwt/constants";
 
 const STATE_TIMEOUT_SECONDS = 15 * Time.Minute;
 
-export interface AuthState {
-    origin: string;
-    successPath: string;
-    errorPath: string;
-    app: string;
-    expire: number;
-    issued: number;
-}
-
-export function createState(request: Request): AuthState {
+export function createState(request: Request): CentralAuthState {
     const url = new URL(request.url);
 
-    const target = url.searchParams.get("target");
-    if (!target) throw new Error("Missing required 'target' parameter.");
+    const param = url.searchParams.get(CENTRAL_AUTH_QUERY);
+    if (!param) throw new Error(`Missing required '${CENTRAL_AUTH_QUERY}' parameter.`);
 
-    const app = url.searchParams.get("app");
-    if (!app) throw new Error("Missing required `app` parameter.");
-
-    const errorPath = url.searchParams.get("errorPath") ?? "/error";
-    if (!isSafePath(errorPath)) throw new Error("Invalid 'error' path.");
-
-    const targetUrl = new URL(target);
-    if (!isSafePath(targetUrl.pathname)) throw new Error("Invalid 'target' path.");
+    const bytes = base64url.decode(param);
+    const query = JSON.parse(new TextDecoder().decode(bytes)) as CentralAuthState;
+    assertCentralAuthQuery(query);
 
     return {
-        app,
-        origin: targetUrl.origin,
-        successPath: targetUrl.pathname + targetUrl.search,
-        errorPath,
-        issued: Math.floor(Date.now() / 1000),
-        expire: getExpireSeconds(url.searchParams.get("expire")),
+        app: query.app,
+        origin: query.origin,
+        targetPath: query.targetPath,
+        errorPath: query.errorPath,
+        loginPath: query.loginPath,
+        expire: query.expire,
     };
 }
 
-export function isTimedOut(state: AuthState): boolean {
-    const now = Math.floor(Date.now() / 1000);
-    return now > state.issued + STATE_TIMEOUT_SECONDS;
-}
-
-export function getExpireSeconds(seconds: string | number | null): number {
-    if (!seconds) return DEFAULT_JWT_EXPIRE;
-
-    let n: number;
-    if (typeof seconds === "number") {
-        n = seconds;
-    } else {
-        n = Number(seconds);
-    }
-    return Number.isFinite(n) && n > 0 ? n : DEFAULT_JWT_EXPIRE;
-}
-
-export async function encodeState(state: AuthState, secret: string): Promise<string> {
+export async function encodeState(state: CentralAuthState, secret: string): Promise<string> {
     const json = JSON.stringify(state);
     const sig = await hmacSign(json, secret);
     const payload = base64url.encode(new TextEncoder().encode(json));
     return `${payload}.${sig}`;
 }
 
-export async function decodeState(signed: string, secret: string): Promise<AuthState | null> {
+export async function decodeState(
+    signed: string,
+    secret: string
+): Promise<CentralAuthState | null> {
     const [payloadB64, sig] = signed.split(".");
     if (!payloadB64 || !sig) return null;
 
@@ -88,7 +64,7 @@ export async function decodeState(signed: string, secret: string): Promise<AuthS
     const valid = await hmacVerify(json, sig, secret);
     if (!valid) return null;
 
-    return JSON.parse(json) as AuthState;
+    return JSON.parse(json) as CentralAuthState;
 }
 
 async function hmacSign(message: string, secret: string): Promise<string> {
@@ -106,13 +82,4 @@ async function hmacSign(message: string, secret: string): Promise<string> {
 async function hmacVerify(message: string, signature: string, secret: string): Promise<boolean> {
     const expected = await hmacSign(message, secret);
     return expected === signature;
-}
-
-function isSafePath(path: string): boolean {
-    if (!path) return false;
-    if (!path.startsWith("/")) return false;
-    if (path.includes("..") || path.includes("//") || path.includes(".")) return false;
-
-    const pattern = /^\/([a-zA-Z]+(\/[a-zA-Z]+)*)?$/;
-    return pattern.test(path);
 }
