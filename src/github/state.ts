@@ -15,14 +15,11 @@
  */
 
 import {
-    assertCentralAuthQuery,
+    assertCentralAuthState,
     CENTRAL_AUTH_QUERY,
     CentralAuthState,
 } from "@adonix.org/central-auth-types";
-import { Time } from "@adonix.org/cloud-spark";
 import { base64url } from "jose";
-
-const STATE_TIMEOUT_SECONDS = 15 * Time.Minute;
 
 export function createState(request: Request): CentralAuthState {
     const url = new URL(request.url);
@@ -32,7 +29,7 @@ export function createState(request: Request): CentralAuthState {
 
     const bytes = base64url.decode(param);
     const query = JSON.parse(new TextDecoder().decode(bytes)) as CentralAuthState;
-    assertCentralAuthQuery(query);
+    assertCentralAuthState(query);
 
     return {
         app: query.app,

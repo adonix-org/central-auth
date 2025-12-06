@@ -37,7 +37,7 @@ export interface CentralAuthState {
  * Asserts that `value` is a valid CentralAuthQuery.
  * Throws errors for invalid properties.
  */
-export function assertCentralAuthQuery(value: unknown): asserts value is CentralAuthState {
+export function assertCentralAuthState(value: unknown): asserts value is CentralAuthState {
     if (typeof value !== "object" || value === null) {
         throw new Error(`Invlid value type.`);
     }
@@ -57,7 +57,7 @@ export function assertCentralAuthQuery(value: unknown): asserts value is Central
     assertSafePath(v.origin, v.errorPath);
 }
 
-export function assertSafePath(origin: string, path: unknown): asserts path is string {
+function assertSafePath(origin: string, path: unknown): asserts path is string {
     if (typeof path !== "string") {
         throw new Error(`Invalid path.`);
     }
