@@ -15,7 +15,11 @@
  */
 
 import { StatusCodes, WorkerResponse } from "@adonix.org/cloud-spark";
-import { CENTRAL_AUTH_QUERY, CentralAuthState } from "@adonix.org/central-auth-types";
+import {
+    CENTRAL_AUTH_QUERY,
+    CENTRAL_AUTH_SESSION,
+    CentralAuthState,
+} from "@adonix.org/central-auth-types";
 import { base64url } from "jose";
 
 export class Redirect extends WorkerResponse {
@@ -31,12 +35,12 @@ export class Redirect extends WorkerResponse {
 export class JwtResponse extends Redirect {
     constructor(state: CentralAuthState, token: string) {
         const url = new URL(state.targetPath, state.origin);
-        url.searchParams.set("adonix_auth", token);
+        url.searchParams.set(CENTRAL_AUTH_SESSION, token);
         super(url.toString());
     }
 }
 
-export class LoginFailed extends Redirect {
+export class InvalidLogin extends Redirect {
     constructor(state: CentralAuthState) {
         const url = new URL(state.loginPath, state.origin);
         url.searchParams.set("adonix_auth_error", "Invalid login.");

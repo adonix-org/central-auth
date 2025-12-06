@@ -17,10 +17,10 @@
 import { BasicWorker, Forbidden } from "@adonix.org/cloud-spark";
 import { getPayload, getToken, getUser } from "./utils";
 import { decodeState } from "./state";
-import { ErrorRedirect, JwtResponse, LoginFailed } from "./response";
+import { ErrorRedirect, JwtResponse, InvalidLogin } from "./response";
 import { signJwt } from "../jwt/utils";
 
-const validUser = false;
+const validUser = true;
 
 export class GitHubCallback extends BasicWorker {
     protected override async get(): Promise<Response> {
@@ -41,7 +41,7 @@ export class GitHubCallback extends BasicWorker {
         try {
             const user = await getUser(await getToken(this.env, code));
             if (!validUser) {
-                return this.response(LoginFailed, state);
+                return this.response(InvalidLogin, state);
             }
 
             const payload = { ...getPayload(state, user) };

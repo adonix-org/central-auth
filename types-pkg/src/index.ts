@@ -19,6 +19,8 @@
  */
 export const CENTRAL_AUTH_QUERY = "_adonix_ca";
 
+export const CENTRAL_AUTH_SESSION = "_adonix_session";
+
 /**
  * Encode in base64 and send as query paramter.
  */
